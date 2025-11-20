@@ -8,7 +8,12 @@ import './styles/global.css'
 
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
 app.use(router)
+
+// Initialize theme store after Pinia is set up
+import { useThemeStore } from './stores/theme'
+useThemeStore()
 
 app.mount('#app')

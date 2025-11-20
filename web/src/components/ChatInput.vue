@@ -82,14 +82,14 @@ const handleKeyPress = (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="border-t border-gray-200 bg-white">
+  <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
     <div class="max-w-4xl mx-auto px-4 py-4">
       <!-- Image Preview -->
       <div v-if="imagePreview" class="mb-3 relative inline-block">
         <img :src="imagePreview" alt="Preview" class="max-h-48 rounded-md" />
         <button
           @click="removeImage"
-          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+          class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
         >
           ×
         </button>
@@ -104,13 +104,13 @@ const handleKeyPress = (event: KeyboardEvent) => {
           @input="adjustTextareaHeight"
           placeholder="What's on your mind?"
           rows="3"
-          class="w-full resize-none border border-gray-300 rounded-md px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="w-full resize-none border border-gray-300 dark:border-gray-600 rounded-md px-4 py-3 text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
         />
 
         <div class="flex items-center justify-between">
           <button
             @click="fileInputRef?.click()"
-            class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
             type="button"
           >
             <svg
@@ -144,15 +144,15 @@ const handleKeyPress = (event: KeyboardEvent) => {
             :class="[
               'px-6 py-2 rounded-md font-medium transition-colors',
               canSend
-                ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed',
+                ? 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed',
             ]"
             type="button"
           >
             Post
           </button>
         </div>
-        <p class="text-xs text-gray-500">Press Ctrl+Enter to post</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Press Ctrl+Enter to post</p>
       </div>
     </div>
   </div>
