@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useChatStore } from '@/stores/chat'
 import { useThemeStore } from '@/stores/theme'
@@ -64,8 +65,14 @@ onUnmounted(() => {
       class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm relative"
     >
       <div class="flex items-center justify-between">
-        <div class="flex-1">
+        <div class="flex-1 flex items-center gap-4">
           <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Feed</h1>
+          <RouterLink
+            to="/settings"
+            class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
+            Settings
+          </RouterLink>
           <div class="flex items-center gap-2 mt-1">
             <div
               :class="[
