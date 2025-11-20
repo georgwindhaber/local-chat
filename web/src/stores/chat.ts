@@ -20,6 +20,7 @@ export const useChatStore = defineStore('chat', () => {
   const isConnected = ref(false)
   const connectionError = ref<string | null>(null)
   const username = ref<string>('')
+  const avatar = ref<string | null>(null)
   const pendingMessages = ref<
     Array<{
       username: string
@@ -159,6 +160,27 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const setAvatar = (avatarData: string | null) => {
+    avatar.value = avatarData
+    // Store in localStorage for persistence
+    if (typeof window !== 'undefined') {
+      if (avatarData) {
+        localStorage.setItem('chat-avatar', avatarData)
+      } else {
+        localStorage.removeItem('chat-avatar')
+      }
+    }
+  }
+
+  const getAvatarForUsername = (usernameToCheck: string): string | null => {
+    // For now, only return avatar for current user
+    // In a full implementation, you'd store avatars per username
+    if (usernameToCheck === username.value) {
+      return avatar.value
+    }
+    return null
+  }
+
   const toggleReaction = (messageId: number, emoji: string) => {
     if (!ws.value || ws.value.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected')
@@ -180,11 +202,15 @@ export const useChatStore = defineStore('chat', () => {
     return [...messages.value].sort((a, b) => a.timestamp - b.timestamp)
   })
 
-  // Load username from localStorage on init
+  // Load username and avatar from localStorage on init
   if (typeof window !== 'undefined') {
     const savedUsername = localStorage.getItem('chat-username')
     if (savedUsername) {
       username.value = savedUsername
+    }
+    const savedAvatar = localStorage.getItem('chat-avatar')
+    if (savedAvatar) {
+      avatar.value = savedAvatar
     }
   }
 
@@ -194,10 +220,13 @@ export const useChatStore = defineStore('chat', () => {
     isConnected,
     connectionError,
     username,
+    avatar,
     connect,
     disconnect,
     sendMessage,
     setUsername,
+    setAvatar,
+    getAvatarForUsername,
     toggleReaction,
     sortedMessages,
   }

@@ -46,6 +46,10 @@ const handleReactionClick = (emoji: string) => {
 const handleEmojiSelect = (emoji: string) => {
   chatStore.toggleReaction(props.message.id, emoji)
 }
+
+const userAvatar = computed(() => {
+  return chatStore.getAvatarForUsername(props.message.username)
+})
 </script>
 
 <template>
@@ -106,9 +110,15 @@ const handleEmojiSelect = (emoji: string) => {
             <ReactionPicker :on-select="handleEmojiSelect" />
           </div>
           <div
-            class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center"
+            class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center overflow-hidden"
           >
-            <span class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+            <img
+              v-if="userAvatar"
+              :src="userAvatar"
+              alt="Avatar"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-xs font-semibold text-gray-600 dark:text-gray-300">
               {{ message.username.charAt(0).toUpperCase() }}
             </span>
           </div>

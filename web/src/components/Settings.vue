@@ -12,9 +12,12 @@ const { isDark } = storeToRefs(themeStore)
 
 const usernameInput = ref('')
 const showSaveSuccess = ref(false)
+const avatarPreview = ref<string | null>(null)
+const avatarFileInput = ref<HTMLInputElement | null>(null)
 
 onMounted(() => {
   usernameInput.value = chatStore.username
+  avatarPreview.value = chatStore.avatar
 })
 
 const saveUsername = () => {
@@ -24,6 +27,41 @@ const saveUsername = () => {
     setTimeout(() => {
       showSaveSuccess.value = false
     }, 2000)
+  }
+}
+
+const handleAvatarSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  // Check if it's an image
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+
+  // Check file size (max 2MB for avatars)
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Avatar image size must be less than 2MB')
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const result = e.target?.result as string
+    avatarPreview.value = result
+    chatStore.setAvatar(result)
+  }
+  reader.readAsDataURL(file)
+}
+
+const removeAvatar = () => {
+  avatarPreview.value = null
+  chatStore.setAvatar(null)
+  if (avatarFileInput.value) {
+    avatarFileInput.value.value = ''
   }
 }
 </script>
@@ -88,6 +126,60 @@ const saveUsername = () => {
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Your username will be displayed with your messages.
           </p>
+        </div>
+
+        <!-- Avatar Section -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-4"
+        >
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Avatar</h2>
+          <div class="flex items-center gap-4">
+            <!-- Avatar Preview -->
+            <div class="relative">
+              <div
+                class="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center overflow-hidden"
+              >
+                <img
+                  v-if="avatarPreview"
+                  :src="avatarPreview"
+                  alt="Avatar"
+                  class="w-full h-full object-cover"
+                />
+                <span v-else class="text-xl font-semibold text-gray-600 dark:text-gray-300">
+                  {{ (chatStore.username || 'A').charAt(0).toUpperCase() }}
+                </span>
+              </div>
+              <button
+                v-if="avatarPreview"
+                @click="removeAvatar"
+                class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors"
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+
+            <!-- Upload Button -->
+            <div class="flex-1">
+              <input
+                ref="avatarFileInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleAvatarSelect"
+              />
+              <button
+                @click="avatarFileInput?.click()"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-md font-medium transition-colors"
+                type="button"
+              >
+                {{ avatarPreview ? 'Change Avatar' : 'Upload Avatar' }}
+              </button>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Upload an image to use as your avatar. Max size: 2MB
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Theme Section -->
