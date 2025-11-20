@@ -21,7 +21,12 @@ const formattedTime = computed(() => {
 </script>
 
 <template>
-  <div :class="['flex mb-3', isSent ? 'justify-end' : 'justify-start']">
+  <div :class="['flex flex-col mb-3', isSent ? 'items-end' : 'items-start']">
+    <!-- Username -->
+    <div v-if="!isSent" class="text-xs text-gray-500 mb-1 px-1">
+      {{ message.username }}
+    </div>
+
     <div
       :class="[
         'max-w-[75%] rounded-2xl px-4 py-2 shadow-sm',

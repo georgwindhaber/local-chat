@@ -56,7 +56,11 @@ app.get(
             return;
           }
 
-          let messageData: { content?: string; image?: string };
+          let messageData: {
+            username?: string;
+            content?: string;
+            image?: string;
+          };
 
           // Try to parse as JSON, fallback to plain text
           try {
@@ -66,8 +70,9 @@ app.get(
             messageData = { content: data };
           }
 
-          // Extract content and image from message data
+          // Extract username, content and image from message data
           // Image should be sent as base64 string (e.g., "data:image/png;base64,...")
+          const username = messageData.username || "Anonymous";
           const content = messageData.content || null;
           const image = messageData.image || null;
 
@@ -78,7 +83,11 @@ app.get(
           }
 
           // Save message to database
-          const savedMessage = dbOperations.insertMessage(content, image);
+          const savedMessage = dbOperations.insertMessage(
+            username,
+            content,
+            image
+          );
           console.log("Message saved:", savedMessage);
 
           // Broadcast to all clients

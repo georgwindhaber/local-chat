@@ -9,6 +9,7 @@ const dbPath = path.join(__dirname, "../chat.db.json");
 
 export interface Message {
   id: number;
+  username: string;
   content: string | null;
   image: string | null;
   timestamp: number;
@@ -24,7 +25,19 @@ function loadDatabase(): Database {
   try {
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath, "utf-8");
-      return JSON.parse(data);
+      const db = JSON.parse(data);
+
+      // Migrate old messages without username field
+      if (db.messages && Array.isArray(db.messages)) {
+        db.messages = db.messages.map((msg: any) => {
+          if (!msg.username) {
+            msg.username = "Anonymous";
+          }
+          return msg;
+        });
+      }
+
+      return db;
     }
   } catch (error) {
     console.error("Error loading database:", error);
@@ -51,10 +64,15 @@ setInterval(() => {
 
 export const dbOperations = {
   // Insert a new message
-  insertMessage(content: string | null, image: string | null): Message {
+  insertMessage(
+    username: string,
+    content: string | null,
+    image: string | null
+  ): Message {
     const timestamp = Date.now();
     const message: Message = {
       id: db.nextId++,
+      username,
       content,
       image,
       timestamp,
