@@ -54,10 +54,10 @@ onUnmounted(() => {
   <div ref="pickerRef" class="relative">
     <button
       @click.stop="showPicker = !showPicker"
-      class="px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+      class="w-8 h-8 flex items-center justify-center bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 rounded-full transition-colors"
       type="button"
     >
-      😀
+      <span class="text-sm">😀</span>
     </button>
 
     <div
