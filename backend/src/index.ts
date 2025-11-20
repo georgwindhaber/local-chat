@@ -23,6 +23,18 @@ function broadcastMessage(message: Message) {
   });
 }
 
+// Broadcast reaction update to all connected clients
+function broadcastReactionUpdate(message: Message) {
+  const updateJson = JSON.stringify({ type: "reaction", message });
+  clients.forEach((client) => {
+    if (client.raw && client.raw.readyState === 1) {
+      client.raw.send(updateJson);
+    } else if (client.readyState === 1) {
+      client.send(updateJson);
+    }
+  });
+}
+
 // WebSocket route for chat
 app.get(
   "/chat",
@@ -57,9 +69,12 @@ app.get(
           }
 
           let messageData: {
+            type?: string;
             username?: string;
             content?: string;
             image?: string;
+            messageId?: number;
+            emoji?: string;
           };
 
           // Try to parse as JSON, fallback to plain text
@@ -70,6 +85,27 @@ app.get(
             messageData = { content: data };
           }
 
+          // Handle reaction updates
+          if (
+            messageData.type === "reaction" &&
+            messageData.messageId &&
+            messageData.emoji
+          ) {
+            const username = messageData.username || "Anonymous";
+            const updatedMessage = dbOperations.toggleReaction(
+              messageData.messageId,
+              messageData.emoji,
+              username
+            );
+
+            if (updatedMessage) {
+              console.log("Reaction updated:", updatedMessage);
+              broadcastReactionUpdate(updatedMessage);
+            }
+            return;
+          }
+
+          // Handle regular messages
           // Extract username, content and image from message data
           // Image should be sent as base64 string (e.g., "data:image/png;base64,...")
           const username = messageData.username || "Anonymous";

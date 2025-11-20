@@ -7,12 +7,18 @@ const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, "../chat.db.json");
 
+export interface Reaction {
+  emoji: string;
+  usernames: string[];
+}
+
 export interface Message {
   id: number;
   username: string;
   content: string | null;
   image: string | null;
   timestamp: number;
+  reactions?: Record<string, string[]>; // emoji -> array of usernames
 }
 
 interface Database {
@@ -27,11 +33,14 @@ function loadDatabase(): Database {
       const data = fs.readFileSync(dbPath, "utf-8");
       const db = JSON.parse(data);
 
-      // Migrate old messages without username field
+      // Migrate old messages without username or reactions field
       if (db.messages && Array.isArray(db.messages)) {
         db.messages = db.messages.map((msg: any) => {
           if (!msg.username) {
             msg.username = "Anonymous";
+          }
+          if (!msg.reactions) {
+            msg.reactions = {};
           }
           return msg;
         });
@@ -76,6 +85,7 @@ export const dbOperations = {
       content,
       image,
       timestamp,
+      reactions: {},
     };
 
     db.messages.push(message);
@@ -94,6 +104,39 @@ export const dbOperations = {
     return db.messages
       .filter((msg) => msg.timestamp > timestamp)
       .sort((a, b) => a.timestamp - b.timestamp);
+  },
+
+  // Add or remove a reaction
+  toggleReaction(
+    messageId: number,
+    emoji: string,
+    username: string
+  ): Message | null {
+    const message = db.messages.find((m) => m.id === messageId);
+    if (!message) return null;
+
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+
+    if (!message.reactions[emoji]) {
+      message.reactions[emoji] = [];
+    }
+
+    const index = message.reactions[emoji].indexOf(username);
+    if (index > -1) {
+      // Remove reaction
+      message.reactions[emoji].splice(index, 1);
+      if (message.reactions[emoji].length === 0) {
+        delete message.reactions[emoji];
+      }
+    } else {
+      // Add reaction
+      message.reactions[emoji].push(username);
+    }
+
+    saveDatabase(db);
+    return message;
   },
 };
 

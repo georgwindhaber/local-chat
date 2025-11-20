@@ -7,6 +7,7 @@ export interface Message {
   content: string | null
   image: string | null
   timestamp: number
+  reactions?: Record<string, string[]> // emoji -> array of usernames
 }
 
 export interface MessageWithSent extends Message {
@@ -44,9 +45,25 @@ export const useChatStore = defineStore('chat', () => {
 
       ws.value.onmessage = (event) => {
         try {
-          const message: MessageWithSent = JSON.parse(event.data)
+          const data = JSON.parse(event.data)
+
+          // Handle reaction updates
+          if (data.type === 'reaction' && data.message) {
+            const messageIndex = messages.value.findIndex((m) => m.id === data.message.id)
+            if (messageIndex !== -1) {
+              messages.value[messageIndex] = {
+                ...data.message,
+                isSent: messages.value[messageIndex]?.isSent,
+              }
+            }
+            return
+          }
+
+          // Handle regular messages
+          const message: MessageWithSent = data
           // Check if message already exists (avoid duplicates)
-          if (!messages.value.find((m) => m.id === message.id)) {
+          const existingIndex = messages.value.findIndex((m) => m.id === message.id)
+          if (existingIndex === -1) {
             // Check if this message matches a pending one (sent by us)
             const pendingIndex = pendingMessages.value.findIndex(
               (pending) =>
@@ -62,6 +79,12 @@ export const useChatStore = defineStore('chat', () => {
             }
 
             messages.value.push(message)
+          } else {
+            // Update existing message (for reactions)
+            messages.value[existingIndex] = {
+              ...message,
+              isSent: messages.value[existingIndex]?.isSent,
+            }
           }
         } catch (error) {
           console.error('Error parsing message:', error)
@@ -136,6 +159,23 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const toggleReaction = (messageId: number, emoji: string) => {
+    if (!ws.value || ws.value.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected')
+      return
+    }
+
+    const currentUsername = username.value || 'Anonymous'
+    ws.value.send(
+      JSON.stringify({
+        type: 'reaction',
+        messageId,
+        emoji,
+        username: currentUsername,
+      }),
+    )
+  }
+
   const sortedMessages = computed(() => {
     return [...messages.value].sort((a, b) => a.timestamp - b.timestamp)
   })
@@ -158,6 +198,7 @@ export const useChatStore = defineStore('chat', () => {
     disconnect,
     sendMessage,
     setUsername,
+    toggleReaction,
     sortedMessages,
   }
 })
