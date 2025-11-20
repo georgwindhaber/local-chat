@@ -6,47 +6,56 @@ const props = defineProps<{
   message: MessageWithSent
 }>()
 
-const isSent = computed(() => {
-  return props.message.isSent ?? false
-})
-
 const formattedTime = computed(() => {
   const date = new Date(props.message.timestamp)
-  return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days < 7) return `${days}d ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 })
 </script>
 
 <template>
-  <div :class="['flex flex-col mb-3', isSent ? 'items-end' : 'items-start']">
-    <!-- Username -->
-    <div v-if="!isSent" class="text-xs text-gray-500 mb-1 px-1">
-      {{ message.username }}
+  <article
+    class="bg-white border border-gray-200 rounded-md mb-4 hover:border-gray-300 transition-colors"
+  >
+    <!-- Post Header -->
+    <div class="px-4 pt-3 pb-2 flex items-center gap-2">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+          <span class="text-xs font-semibold text-gray-600">
+            {{ message.username.charAt(0).toUpperCase() }}
+          </span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-semibold text-gray-900">{{ message.username }}</span>
+          <span class="text-xs text-gray-500">{{ formattedTime }}</span>
+        </div>
+      </div>
     </div>
 
-    <div
-      :class="[
-        'max-w-[75%] rounded-2xl px-4 py-2 shadow-sm',
-        isSent ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900',
-      ]"
-    >
-      <!-- Image if present -->
-      <div v-if="message.image" class="mb-2">
-        <img :src="message.image" alt="Message image" class="max-w-full h-auto rounded-lg" />
-      </div>
-
+    <!-- Post Content -->
+    <div class="px-4 pb-3">
       <!-- Text content -->
-      <div v-if="message.content" class="text-sm leading-relaxed">
+      <div v-if="message.content" class="text-base leading-relaxed text-gray-900 mb-3">
         {{ message.content }}
       </div>
 
-      <!-- Timestamp -->
-      <div :class="['text-xs mt-1', isSent ? 'text-blue-100' : 'text-gray-500']">
-        {{ formattedTime }}
+      <!-- Image if present -->
+      <div v-if="message.image" class="mb-3">
+        <img
+          :src="message.image"
+          alt="Post image"
+          class="w-full h-auto rounded-md max-h-96 object-contain"
+        />
       </div>
     </div>
-  </div>
+  </article>
 </template>

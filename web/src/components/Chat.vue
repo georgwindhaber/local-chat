@@ -58,7 +58,7 @@ onUnmounted(() => {
     <div class="bg-white border-b border-gray-200 px-4 py-3 shadow-sm relative">
       <div class="flex items-center justify-between">
         <div class="flex-1">
-          <h1 class="text-xl font-semibold text-gray-900">Messages</h1>
+          <h1 class="text-xl font-semibold text-gray-900">Feed</h1>
           <div class="flex items-center gap-2 mt-1">
             <div
               :class="[
@@ -100,16 +100,18 @@ onUnmounted(() => {
     </div>
 
     <!-- Messages Container -->
-    <div ref="messagesContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto px-4 py-4">
-      <div v-if="chatStore.sortedMessages.length === 0" class="text-center text-gray-400 mt-8">
-        No messages yet. Start a conversation!
-      </div>
+    <div ref="messagesContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto bg-gray-100">
+      <div class="max-w-4xl mx-auto px-4 py-6">
+        <div v-if="chatStore.sortedMessages.length === 0" class="text-center text-gray-400 mt-8">
+          No posts yet. Start a conversation!
+        </div>
 
-      <MessageBubble
-        v-for="message in chatStore.sortedMessages"
-        :key="message.id"
-        :message="message"
-      />
+        <MessageBubble
+          v-for="message in chatStore.sortedMessages"
+          :key="message.id"
+          :message="message"
+        />
+      </div>
     </div>
 
     <!-- Input Area -->
